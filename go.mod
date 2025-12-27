@@ -1,3 +1,3 @@
-module github.com/OfimaticSRL/parsemail
+module github.com/xhit/parsemail
 
 go 1.12
