@@ -373,6 +373,9 @@ func decodeEmbeddedFile(part *multipart.Part) (ef EmbeddedFile, err error) {
 		return
 	}
 
+	contentTypePart := strings.Split(part.Header.Get("Content-Type"), ";")
+
+	ef.Filename = getFilenameFromContentType(part, contentTypePart)
 	ef.CID = strings.Trim(cid, "<>")
 	ef.Data = decoded
 	ef.ContentType = part.Header.Get("Content-Type")
@@ -391,19 +394,23 @@ func decodeAttachment(part *multipart.Part) (at Attachment, err error) {
 	}
 	contentTypePart := strings.Split(part.Header.Get("Content-Type"), ";")
 
+	at.Filename = getFilenameFromContentType(part, contentTypePart)
+	at.Data = decoded
+	at.ContentType = contentTypePart[0]
+
+	return
+}
+
+func getFilenameFromContentType(part *multipart.Part, contentTypePart []string) string {
 	// get filename from filename or from second part (commonly is name, name=Test.txt)
 	filename := decodeMimeSentence(part.FileName())
-	if filename == "" {
+	if len(contentTypePart) > 1 && filename == "" {
 		secondPart := strings.Split(contentTypePart[1], "=")
 		if len(secondPart) == 2 {
 			filename = strings.ReplaceAll(secondPart[1], "\"", "")
 		}
 	}
-	at.Filename = filename
-	at.Data = decoded
-	at.ContentType = contentTypePart[0]
-
-	return
+	return filename
 }
 
 func decodeContent(content io.Reader, encoding string) (io.Reader, error) {
@@ -517,6 +524,7 @@ type Attachment struct {
 
 // EmbeddedFile with content id, content type and data (as a io.Reader)
 type EmbeddedFile struct {
+	Filename    string
 	CID         string
 	ContentType string
 	Data        io.Reader
