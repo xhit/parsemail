@@ -378,7 +378,7 @@ func decodeEmbeddedFile(part *multipart.Part) (ef EmbeddedFile, err error) {
 	ef.Filename = getFilenameFromContentType(part, contentTypePart)
 	ef.CID = strings.Trim(cid, "<>")
 	ef.Data = decoded
-	ef.ContentType = part.Header.Get("Content-Type")
+	ef.ContentType = contentTypePart[0]
 
 	return
 }
